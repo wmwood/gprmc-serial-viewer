@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>GPS Log Parser</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.9.0/css/bulma.min.css" />
+    <script type="application/javascript">
+      var module = {};
+    </script>
+    <script src="//unpkg.com/node-nmea@2.0.0/src/index.js" type="application/javascript"></script>
+    <script type="application/javascript">
+      function parseGPS(event) {
+        event.preventDefault();
+
+        document.getElementById('result').value = '';
+
+        var rawGPSText = document.getElementById('rawGPS').value;
+        var lines = rawGPSText.split('\n');
+
+        document.getElementById('result').value += '[';
+        var locationNumber = 1;
+        for (var i = 0; i < lines.length; i++) {
+          var line = lines[i];
+          if (!line.startsWith('$GPRMC')) continue;
+
+          var data = parse(line);
+          var coordinates = data.loc.geojson.coordinates;
+
+          document.getElementById('result').value += '\n// --------------- Location Poll #' + locationNumber++ + '---------------//';
+          document.getElementById('result').value += '\n// Google Map: https://www.google.com/maps/place/' + coordinates[1] + ',' + coordinates[0] + '\n';
+          document.getElementById('result').value += JSON.stringify(data, null, '\t') + ',';
+        }
+
+        document.getElementById('result').value += ']';
+      }
+    </script>
+  </head>
+  <body>
+    <section class="section">
+      <div class="container">
+        <h1 class="title">
+          GPS Log Parser
+        </h1>
+        <p class="subtitle">
+          Paste GPS serial data into top box and click "Process".
+        </p>
+      </div>
+    </section>
+    <section class="section">
+      <div class="container">
+        <form onsubmit="parseGPS(event)">
+          <div class="field">
+            <div class="control">
+              <textarea id="rawGPS" class="textarea" placeholder="GPS Serial Data" rows="10"></textarea>
+            </div>
+          </div>
+          <div class="field is-grouped is-grouped-right">
+            <div class="control">
+              <button class="button is-link" type="submit">Process</button>
+            </div>
+            <div class="control">
+              <button class="button is-link is-light" type="reset">Reset</button>
+            </div>
+          </div>
+          <textarea id="result" class="textarea mt-3" readonly="" rows="25"></textarea>
+        </form>
+      </div>
+    </section>
+  </body>
+</html>
